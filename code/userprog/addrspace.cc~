@@ -141,8 +141,8 @@ AddrSpace::Load(char *fileName)
 		          pageTable[i].dirty = FALSE;
 		          pageTable[i].readOnly = FALSE;
                   pageTable[i].Num_ID =NUM_ID;
-                  //pagetable[i].count++;//LRU
-                  //pagetable[i]. reference_bit = FALSE;// second chance algo.    
+                  //pagetable[i].count++;//LRU用，每存進去一次memory的count就加1
+                  //pagetable[i]. reference_bit = FALSE;// second chance algo.用    
                   executable->ReadAt(&(kernel->machine->mainMemory[j*PageSize]),PageSize, noffH.code.inFileAddr+(i*PageSize));  
                  }
         else{         char *buffer; 

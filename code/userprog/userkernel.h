@@ -28,20 +28,22 @@ class UserProgKernel : public ThreadedKernel {
     void Run();			// do kernel stuff 
 
     void SelfTest();		// test whether kernel is working
-
+    SynchDisk *virtual_disk;
 // These are public for notational convenience.
     Machine *machine;
     FileSystem *fileSystem;
-
 #ifdef FILESYS
     SynchDisk *synchDisk;
-#endif // FILESYS
-
-  private:
+#endif
+//  private:
     bool debugUserProg;		// single step user program
-	Thread* t[10];
+    private:
+   	Thread* t[10];	
 	char*	execfile[10];
-	int	execfileNum;
+	int	execNum;
+
+
+
 };
 
-#endif //USERKERNEL_H
+#endif

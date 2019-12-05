@@ -185,10 +185,12 @@ ExceptionType
 Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 {
     int i;
-    unsigned int vpn, offset;
-    TranslationEntry *entry;
+    int page_victim;
+    int fifo;//(fifo為fifo專用)
+    unsigned int vpn, offset; 
     unsigned int pageFrame;
-
+    unsigned int j;
+    TranslationEntry *entry;
     DEBUG(dbgAddr, "\tTranslate " << virtAddr << (writing ? " , write" : " , read"));
 
 // check for alignment errors
@@ -211,9 +213,90 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 	    DEBUG(dbgAddr, "Illegal virtual page # " << virtAddr);
 	    return AddressErrorException;
 	} else if (!pageTable[vpn].valid) {
-	    DEBUG(dbgAddr, "Invalid virtual page # " << virtAddr);
-	    return PageFaultException;
-	}
+	   // DEBUG(dbgAddr, "Invalid virtual page # " << virtAddr);
+	   // return PageFaultException;
+	  printf("occur Page fault \n";  
+    
+    kernel->stats->numPageFaults++;
+          j=0;
+          while(kernel->machine->usedPhy[j]!=FALSE&&j<NumPhysPages){j++;}
+                 
+              
+                 if(j<NumPhysPages){ 
+                      char *buffer;
+                      buffer = new char[PageSize];
+                  kernel->machine->usedPhy[j]=TRUE;
+                  kernel->machine->number_phy[j]=pageTable[vpn].Num_id;
+              
+                  kernel->machine->recond_main[j]=&pageTable[vpn];
+                  pageTable[vpn].physicalPage = j;
+	              pageTable[vpn].valid = TRUE;
+                 // pageTable[vpn].count++; //LRU計算用
+                 pagetable[vpn]. reference_bit = FALSE;// second chance algo.用  
+                  kernel->virtual_disk->ReadSector(pageTable[vpn].virtualPage, buffer);
+                  bcopy(buffer,&mainMemory[j*PageSize],PageSize);
+                    
+                 }
+                else{
+                         char *buffer_1;
+                         buffer_1 = new char[PageSize];
+                         char *buffer_2;
+                         buffer_2 = new char[PageSize];
+                     page_victim=(RandomNumber()%32); 
+                     //這裡採random選取page_victim
+               		Printf("Number = %d page swap out\n", page_victim);
+//告訴使用者幾號page準備被移走
+//若要改FIFO則page_victim=fifo % 32
+//若要改LRU則
+/*
+Int min=pageTable[0].count;
+Page_Victim=0
+For(int ccount=0;ccount<32;ccount++)
+{
+If(min>pagetable[ccount].count){
+Min=pagetable[ccount].count;
+Page_Victim= ccount;
+}
+}
+Pagetable[Page_Victim].count++;
+*/
+//若要改成second chance algo.則
+/*
+page_victim=fifo % 32
+while(Pagetable[Page_Victim]. reference_bit ==true)
+fifo++;//找一個reference_bit為False的代表可以被換掉
+Pagetable[Page_Victim]. reference_bit = true;//下次不會被換了
+*/
+//
+//把replacement page取出，欲執行page寫入memory
+
+                     
+                     //copy to disk
+                     bcopy(&mainMemory[page_victim*PageSize],buffer_1,PageSize);
+                     kernel->virtual_disk->ReadSector(pageTable[vpn].virtualPage, buffer_2);
+                     bcopy(buffer_2,&mainMemory[page_victim*PageSize],PageSize);
+                     kernel->virtual_disk->WriteSector(pageTable[vpn].virtualPage,buffer_1);
+              
+                     recond_main[page_victim]->virtualPage=pageTable[vpn].virtualPage;
+                     recond_main[page_victim]->valid=FALSE;
+        
+                     pageTable[vpn].valid = TRUE;
+                     pageTable[vpn].physicalPage=page_victim;
+                     kernel->machine->number_phy[page_victim]=pageTable[vpn].Num_id;
+                     recond_main[page_victim]=&pageTable[vpn];
+               //fifo=fifo+1;  //fifo專用
+		Printf("page replacement finished\n")
+
+                
+                    
+
+                  
+                      }
+
+
+	    //return PageFaultException;
+    
+    }
 	entry = &pageTable[vpn];
     } else {
         for (entry = NULL, i = 0; i < TLBSize; i++)

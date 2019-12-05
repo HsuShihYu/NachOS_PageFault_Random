@@ -15,7 +15,6 @@
 
 #include "copyright.h"
 #include "filesys.h"
-#include <string.h>
 
 #define UserStackSize		1024 	// increase this as necessary!
 
@@ -35,13 +34,13 @@ class AddrSpace {
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
-
+    int NUM_ID;
     bool Load(char *fileName);		// Load the program into memory
 					// return false if not found
 
     void InitRegisters();		// Initialize user-level CPU registers,
 					// before jumping to user code
-
+    bool load_test;
 };
 
 #endif // ADDRSPACE_H

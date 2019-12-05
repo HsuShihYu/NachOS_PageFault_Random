@@ -27,10 +27,10 @@
 
 // Definitions related to the size, and format of user memory
 
-const unsigned int PageSize = 128; 		// set the page size equal to
+const int PageSize = 128; 		// set the page size equal to
 					// the disk sector size, for simplicity
 
-const unsigned int NumPhysPages = 32;
+const int NumPhysPages = 32;
 const int MemorySize = (NumPhysPages * PageSize);
 const int TLBSize = 4;			// if there is a TLB, make it small
 
@@ -131,7 +131,16 @@ class Machine {
 
     TranslationEntry *pageTable;
     unsigned int pageTableSize;
+    int  number_id;
+    int number_phy[NumPhysPages];
+    int number_sector;
     bool ReadMem(int addr, int size, int* value);
+    bool usedPhy[NumPhysPages];
+    bool usedvir[NumPhysPages];
+    TranslationEntry *recond_main[NumPhysPages];
+    int count[NumPhysPages];//LRU¥Î
+    bool reference_bit[NumPhysPages];//second chance algo.¥Î
+
   private:
 
 // Routines internal to the machine simulation -- DO NOT call these directly
@@ -141,7 +150,7 @@ class Machine {
     void OneInstruction(Instruction *instr); 	
     				// Run one instruction of a user program.
     
-//    bool ReadMem(int addr, int size, int* value);
+    
     bool WriteMem(int addr, int size, int value);
     				// Read or write 1, 2, or 4 bytes of virtual 
 				// memory (at addr).  Return FALSE if a 

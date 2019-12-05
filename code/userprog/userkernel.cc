@@ -9,7 +9,6 @@
 #include "copyright.h"
 #include "synchconsole.h"
 #include "userkernel.h"
-#include "synchdisk.h"
 
 //----------------------------------------------------------------------
 // UserProgKernel::UserProgKernel
@@ -20,28 +19,19 @@
 UserProgKernel::UserProgKernel(int argc, char **argv) 
 		: ThreadedKernel(argc, argv)
 {
+    execNum=0;
     debugUserProg = FALSE;
-	execfileNum=0;
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-s") == 0) {
 	    debugUserProg = TRUE;
-	}
-	else if (strcmp(argv[i], "-e") == 0) {
-		execfile[++execfileNum]= argv[++i];
-	}
-    	 else if (strcmp(argv[i], "-u") == 0) {
-		cout << "===========The following argument is defined in userkernel.cc" << endl;
-		cout << "Partial usage: nachos [-s]\n";
-		cout << "Partial usage: nachos [-u]" << endl;
-		cout << "Partial usage: nachos [-e] filename" << endl;
-	}
-	else if (strcmp(argv[i], "-h") == 0) {
-		cout << "argument 's' is for debugging. Machine status  will be printed " << endl;
-		cout << "argument 'e' is for execting file." << endl;
-		cout << "atgument 'u' will print all argument usage." << endl;
-		cout << "For example:" << endl;
-		cout << "	./nachos -s : Print machine status during the machine is on." << endl;
-		cout << "	./nachos -e file1 -e file2 : executing file1 and file2."  << endl;
+        } 
+       	else if (strcmp(argv[i], "-e") == 0) {
+		execfile[++execNum]= argv[++i];
+                                       }
+        else if (strcmp(argv[i], "-u") == 0) {
+            cout << "Partial usage: nachos [-s]\n";
+            cout << "Partial usage: nachos [-u]\n";
+            cout << "Partial usage: nachos [-e] file\n"; 
 	}
     }
 }
@@ -58,9 +48,10 @@ UserProgKernel::Initialize()
 
     machine = new Machine(debugUserProg);
     fileSystem = new FileSystem();
+    virtual_Disk = new SynchDisk("New_Disk");
 #ifdef FILESYS
-    synchDisk = new SynchDisk("New SynchDisk");
-#endif // FILESYS
+    synch_Disk = new SynchDisk("New_SynchDisk");
+#endif
 }
 
 //----------------------------------------------------------------------
@@ -73,8 +64,9 @@ UserProgKernel::~UserProgKernel()
 {
     delete fileSystem;
     delete machine;
+    delete virtual_Disk;
 #ifdef FILESYS
-    delete synchDisk;
+    delete synch_Disk;
 #endif
 }
 
@@ -82,39 +74,27 @@ UserProgKernel::~UserProgKernel()
 // UserProgKernel::Run
 // 	Run the Nachos kernel.  For now, just run the "halt" program. 
 //----------------------------------------------------------------------
-void
-ForkExecute(Thread *t)
-{
-	t->space->Execute(t->getName());
-}
 
 void
 UserProgKernel::Run()
 {
+    //AddrSpace *halt = new AddrSpace();
 
-	cout << "Total threads number is " << execfileNum << endl;
-	for (int n=1;n<=execfileNum;n++)
+    //halt->Execute("../test/halt");
+    for (int n=1;n<=execNum;n++)
 		{
 		t[n] = new Thread(execfile[n]);
 		t[n]->space = new AddrSpace();
-		t[n]->Fork((VoidFunctionPtr) &ForkExecute, (void *)t[n]);
-		cout << "Thread " << execfile[n] << " is executing." << endl;
+		t[n]->Fork((VoidFunctionPtr) &Forkex, (void *)t[n]);
+		cout << execfile[n] << " is executing." << endl;
 		}
-//	Thread *t1 = new Thread(execfile[1]);
-//	Thread *t1 = new Thread("../test/test1");
-//	Thread *t2 = new Thread("../test/test2");
-
-//    AddrSpace *halt = new AddrSpace();
-//	t1->space = new AddrSpace();
-//	t2->space = new AddrSpace();
-
-//    halt->Execute("../test/halt");
-//	t1->Fork((VoidFunctionPtr) &ForkExecute, (void *)t1);
-//	t2->Fork((VoidFunctionPtr) &ForkExecute, (void *)t2);
-    ThreadedKernel::Run();
-//	cout << "after ThreadedKernel:Run();" << endl;	// unreachable
+        ThreadedKernel::Run();
 }
-
+void
+Forkex(Thread *temp)
+{
+	temp->space->Execute(temp->getName());
+}
 //----------------------------------------------------------------------
 // UserProgKernel::SelfTest
 //      Test whether this module is working.
@@ -145,9 +125,4 @@ UserProgKernel::SelfTest() {
 
     // self test for running user programs is to run the halt program above
 */
-
-
-
-
-//	cout << "This is self test message from UserProgKernel\n" ;
 }
