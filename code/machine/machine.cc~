@@ -54,7 +54,7 @@ void CheckEndian()
 
 Machine::Machine(bool debug)
 {
-    unsigned int i;
+    int i;
     //====Modify
     for(i = 0;i <NumPhysPages; i++){
 	usedPhyPage[i] = FALSE;

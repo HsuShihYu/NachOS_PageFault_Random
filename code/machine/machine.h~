@@ -32,7 +32,7 @@ const unsigned int PageSize = 128; 		// set the page size equal to
 //====Modify
 const unsigned int NumVirMem = 100;
 //====
-const unsigned int NumPhysPages = 32;
+const unsigned int NumPhysPages = 4;
 const int MemorySize = (NumPhysPages * PageSize);
 const int TLBSize = 4;			// if there is a TLB, make it small
 

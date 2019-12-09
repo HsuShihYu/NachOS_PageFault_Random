@@ -40,7 +40,7 @@ class UserProgKernel : public ThreadedKernel {
 
     //====Modify
     AddrSpace *UsedProcess[NumPhysPages];
-    unsigned int UsedProcessPage[NumPhysPages];
+    unsigned int UseProcessPage[NumPhysPages];
 
 
   private:

@@ -5,7 +5,7 @@
 //	memory location.
 //
 // Two types of translation are supported here.
-// 
+//
 //	Linear page table -- the virtual page # is used as an index
 //	into the table, to find the physical page #.
 //
